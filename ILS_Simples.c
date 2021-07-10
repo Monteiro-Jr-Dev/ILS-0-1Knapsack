@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include <math.h>
 #include "ILS_Header.h"
 
 Mochila* SolucaoInicialAleatoria(Item* candidatos, int quantidade, int capacidade){
@@ -66,10 +65,10 @@ unsigned char** CriarMatrizAdjacencia(int quantidade){
 	unsigned char** matriz = (unsigned char**)malloc(sizeof(unsigned char*)*(quantidade - 1));
 	for(int i = 0; i < quantidade - 1; i++){
 		int tamanho = (quantidade - 1) - i;
-		matriz[i] = (char*) malloc(sizeof(char)*ceil(tamanho/8));
+		matriz[i] = (char*) malloc(sizeof(char)*(tamanho/8 + 1));
 		// Inicializar bits com 0
-		for (int j = 0; j < tamanho; j++){
-			matriz[i][j/8] &= ~(1 << (j%8)); 
+		for (int j = 0; j < (tamanho/8 + 1); j++){
+			matriz[i][j] = 0b0;
 		}
 	}
 	return matriz;
@@ -79,18 +78,39 @@ unsigned char** CriarMatrizAdjacencia(int quantidade){
 // e preenche a matriz de adjacência
 unsigned char** GerarVizinhanca(Item* candidatos, int raioMax, int quant){
     unsigned char** matriz = CriarMatrizAdjacencia(quant);
+
+	// Test
+	printf("Antrs de preencher\n");
+	_imprimirMatriz(matriz, quant);
+
 	Vetor2 pos1, pos2;
-	int indLin, indCol = 0;
+	int indLin, indCol;
 	for(int i = 0; i < quant; i++){
-		for(int j = i + 1; j < quant; j++, indCol++){
-			pos1.x = candidatos[i].valor; 
-			pos1.y = candidatos[i].peso;
+		pos1.x = candidatos[i].valor; 
+		pos1.y = candidatos[i].peso;
+		indCol = 0;
+		for(int j = i + 1; j < quant; j++, indCol++){			
 			pos2.x = candidatos[j].valor;
 			pos2.y = candidatos[j].peso;
 			if(DistanciaQuadrada(pos1, pos2) <= raioMax){
-				matriz[i][indCol/8] |= (1 << (indCol%8));
+				matriz[i][indCol/8] = matriz[i][indCol/8] | 1 << indCol%8;
 			}
 		}
 	}
+
+	// Test
+	printf("Depois de preencher\n");
+	_imprimirMatriz(matriz, quant);
+
     return matriz;
+}
+
+// Apenas para teste
+static void _imprimirMatriz(unsigned char** mat, int quant){
+	for(int i = 0; i < quant - 1; i++){
+		for(int j = 0; j < (quant - 1) - i; j++){
+			printf("%d ", (mat[i][j/8] & 1 << j%8) != 0);
+		}
+		printf("\n");
+	}
 }

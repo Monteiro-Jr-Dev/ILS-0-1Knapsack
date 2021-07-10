@@ -3,7 +3,6 @@
 * Adaptado por Valmir Monteiro
 */
 #include <stdio.h>
-#include <math.h>
 #include "ILS_Header.h"
 
 
@@ -27,8 +26,8 @@ void OrdenarCandidatos(Item *vet, int quant, Vetor2* vetorMedia){
 			pMin.y = vet[i].peso;
 		}
 	}
-	vetorMedia->x = ceil((float)(pMax.x-pMin.x)/quant);
-	vetorMedia->y = ceil((float)(pMax.y-pMin.y)/quant);
+	vetorMedia->x = (pMax.x-pMin.x)/quant + 1;
+	vetorMedia->y = (pMax.y-pMin.y)/quant + 1;
 }
 
 void Quicksort(Item *vet, int ini, int fim){

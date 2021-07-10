@@ -1,4 +1,4 @@
-#define TAMANHO_VIZINHANCA 3
+#define TAMANHO_VIZINHANCA 9 // Está ao quadrado, na prática equivale a sqrt(TAMANHO_VIZINHANCA)
 #define LIMITE_ITERACOES_SEM_MELHORA 20
 
 typedef struct _item Item;
@@ -48,5 +48,6 @@ Mochila* SolucaoInicalGulosa(Item* candidatos, int quantidade, int capacidade);
 Mochila* SolucaoInicialAleatoria(Item* candidatos, int quantidade, int capacidade);
 unsigned char** CriarMatrizAdjacencia(int quantidade);
 unsigned char** GerarVizinhanca(Item* candidatos, int raioMax, int quant);
+static void _imprimirMatriz(unsigned char** mat, int quant); // Somente para teste
 
 // Protótipos ILS_Otimizado

@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include <math.h>
 #include "ILS_Header.h"
 
 Item* LerArquivo(FILE* arquivo, int quantidade){
