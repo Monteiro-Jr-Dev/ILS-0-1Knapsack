@@ -1,5 +1,6 @@
 #define TAMANHO_VIZINHANCA 9 // Está ao quadrado, na prática equivale a sqrt(TAMANHO_VIZINHANCA)
 #define LIMITE_ITERACOES_SEM_MELHORA 20
+#define GRAU_PERTURBACAO 0.3 // Portentagem da solução que será perturbada
 
 typedef struct _item Item;
 typedef struct _itemNode ItemNode;
@@ -11,6 +12,7 @@ struct _item{
 	int peso;
 	int valor;	
 	float proporcao;
+	int quantVizinhos;
 };
 
 struct _itemNode{
@@ -19,6 +21,7 @@ struct _itemNode{
 };
 
 struct _mochila{
+	int id;
 	int itensTotal;
 	int valorTotal;
 	int pesoTotal;
@@ -35,6 +38,7 @@ Item* LerArquivo(FILE* arquivo, int quantidade);
 void CopiarItem(Item* destino, Item* origem);
 void AdicionarItem(Mochila* mochila, Item* item);
 void DestruirMochila(Mochila* mochila);
+void DestruirMemoria(Mochila** mem, int quant);
 void ImprimirMochila(Mochila* mochila);
 
 //Protótipos Quicksort
@@ -44,10 +48,11 @@ int Particiona(Item *vet, int ini, int fim);
 
 // Protótipos ILS_Simples
 int DistanciaQuadrada(Vetor2 v1, Vetor2 v2);
-Mochila* SolucaoInicalGulosa(Item* candidatos, int quantidade, int capacidade);
+Mochila* SolucaoInicalGulosa(Item* candidatos, Mochila** memoria, int quantidade, int capacidade);
 Mochila* SolucaoInicialAleatoria(Item* candidatos, int quantidade, int capacidade);
 unsigned char** CriarMatrizAdjacencia(int quantidade);
 unsigned char** GerarVizinhanca(Item* candidatos, int raioMax, int quant);
+Mochila* BuscaLocal(Mochila* solucao, int indiceBase, Item* conjuntoCandidatos, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens, int capacidadeMochila, int iteracoesSemMelhora);
 static void _imprimirMatriz(unsigned char** mat, int quant); // Somente para teste
+Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade);
 
-// Protótipos ILS_Otimizado

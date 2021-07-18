@@ -37,20 +37,29 @@ void AdicionarItem(Mochila* mochila, Item* item){
 }
 
 void DestruirMochila(Mochila* mochila){
-	ItemNode *itemAtual, *itemProximo;
-	itemAtual = mochila->listaItens;
-	if(itemAtual != NULL){
-		itemProximo = itemAtual->proximo;
-		while(itemAtual != NULL){
-			free(itemAtual->itemPtr);
-			free(itemAtual);
-			itemAtual = itemProximo;
-			if(itemProximo != NULL){
-				itemProximo = itemProximo->proximo;
+	if(mochila != NULL){
+		ItemNode *itemAtual, *itemProximo;
+		itemAtual = mochila->listaItens;
+		if(itemAtual != NULL){
+			itemProximo = itemAtual->proximo;
+			while(itemAtual != NULL){
+				free(itemAtual);
+				itemAtual = itemProximo;
+				if(itemProximo != NULL){
+					itemProximo = itemProximo->proximo;
+				}
 			}
 		}
+		
+		free(mochila);
 	}
-	free(mochila);
+}
+
+void DestruirMemoria(Mochila** mem, int quant){
+	for(int i = 0; i <  quant; i++){
+		free(mem[i]);
+	}
+	free(mem);
 }
 
 void ImprimirMochila(Mochila* mochila){
