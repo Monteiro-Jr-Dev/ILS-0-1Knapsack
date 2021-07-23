@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <math.h>
 #include "ILS_Header.h"
 
 Mochila* SolucaoInicialAleatoria(Item* candidatos, int quantidade, int capacidade){
@@ -101,13 +102,13 @@ unsigned char** GerarVizinhanca(Item* candidatos, int raioMax, int quant){
     return matriz;
 }
 
-Mochila* BuscaLocal(Mochila* solucao, int indiceBase, Item* conjuntoCandidatos, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens, int capacidadeMochila, int iteracoesSemMelhora){
+Mochila* BuscaLocal(Mochila* solucao, int indicePivo, Item* conjuntoCandidatos, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens, int capacidadeMochila, int iteracoesSemMelhora){
 	Mochila* solucaoNova, *solucaoRetorno;
 	int iteCont = 0, indice, cont = 0;
 
 	// Verificar se não consegue encontrar uma solução melhor durante um longo período
 	if(iteracoesSemMelhora < LIMITE_ITERACOES_SEM_MELHORA){
-		int* posVizinhos = (int*)malloc(sizeof(int)*conjuntoCandidatos[indiceBase].quantVizinhos);
+		int* posVizinhos = (int*)malloc(sizeof(int)*conjuntoCandidatos[indicePivo].quantVizinhos);
 		// Faz busca local usando os itens da solução atual como base
 		ItemNode* itemAtual = solucao->listaItens;		
 		for(int i = 0; i < solucao->itensTotal; i++){
@@ -121,11 +122,11 @@ Mochila* BuscaLocal(Mochila* solucao, int indiceBase, Item* conjuntoCandidatos, 
 		}		
 
 		// Escolher a melhor entre a melhor anterior e as soluções da vizinhança
-		solucaoNova = memoria[indiceBase];
+		solucaoNova = memoria[indicePivo];
 		if(solucaoNova->valorTotal > solucao->valorTotal){
 			solucaoNova = solucao;
 		}
-		for(int i = 0; i < conjuntoCandidatos[indiceBase].quantVizinhos; i++){
+		for(int i = 0; i < conjuntoCandidatos[indicePivo].quantVizinhos; i++){
 			if(solucaoNova->valorTotal > memoria[posVizinhos[i]]->valorTotal){
 				solucaoNova = memoria[posVizinhos[i]];
 			}
@@ -169,19 +170,19 @@ Mochila* BuscaLocal(Mochila* solucao, int indiceBase, Item* conjuntoCandidatos, 
 
 // Encontra (e guarda na memória) a solução de cada vizinho utilizando guloso
 // Usa a matriz de adjacência para montar a solução
-void BuscaNoVizinho(Item* conjuntoCandidatos, int indiceBase, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens){
+void BuscaNoVizinho(Item* conjuntoCandidatos, int indicePivo, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens){
 	/*
 	// Verificar se não consegue encontrar uma solução melhor durante um longo período
     if(iteracoesSemMelhora < LIMITE_ITERACOES_SEM_MELHORA){
-        int* posVizinhos = (int*)malloc(sizeof(int)*conjuntoCandidatos[indiceBase].quantVizinhos);
+        int* posVizinhos = (int*)malloc(sizeof(int)*conjuntoCandidatos[indicePivo].quantVizinhos);
 
         // Calcular a solução do nó atual e todos os vizinhos e guarda a posição de todos 
-        if(memoria[indiceBase] == NULL){
-            BuscaVizinhos(conjuntoCandidatos, indiceBase, matrizAdj, memoria, quantidadeItens);
+        if(memoria[indicePivo] == NULL){
+            BuscaVizinhos(conjuntoCandidatos, indicePivo, matrizAdj, memoria, quantidadeItens);
         }
         // Buscar vizinhos na coluna do item
-        for(int i = 0; i < indiceBase; i++){
-            int col = indiceBase - 1 - i;
+        for(int i = 0; i < indicePivo; i++){
+            int col = indicePivo - 1 - i;
             if(matrizAdj[i][col/8] & 1 << col%8){
                 // Guardar a posição dos vizinhos no vetor de candidatos
                 posVizinhos[cont++] = i;
@@ -192,13 +193,13 @@ void BuscaNoVizinho(Item* conjuntoCandidatos, int indiceBase, unsigned char** ma
             }
         }
         // Buscar vizinhos na linha do item
-        for(int i = 0; i < (quantidadeItens - 1) - indiceBase; i++){
-            if((matrizAdj[indiceBase][i/8] & 1 << i%8)){
+        for(int i = 0; i < (quantidadeItens - 1) - indicePivo; i++){
+            if((matrizAdj[indicePivo][i/8] & 1 << i%8)){
                 // Guardar a posição dos vizinhos no vetor de candidatos
-                posVizinhos[cont++] = (i + 1 + indiceBase);
+                posVizinhos[cont++] = (i + 1 + indicePivo);
                 // Se vizinho não existe na memória, calcula
                 if(memoria[i] == NULL){
-                    BuscaVizinhos(conjuntoCandidatos, (i + 1 + indiceBase), matrizAdj, memoria, quantidadeItens);
+                    BuscaVizinhos(conjuntoCandidatos, (i + 1 + indicePivo), matrizAdj, memoria, quantidadeItens);
                 }
             }
         }
@@ -207,10 +208,8 @@ void BuscaNoVizinho(Item* conjuntoCandidatos, int indiceBase, unsigned char** ma
 
 Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade){ 
 	srand(time(NULL));
-	int pertTotal = (int)(solucao->itensTotal * GRAU_PERTURBACAO);	
-	int pertCont = 0;
+	int pertTotal = (int)(solucao->itensTotal * GRAU_PERTURBACAO) + 1;	
 	int* indicesNaoPerturbados = (int*)malloc(sizeof(int)*(solucao->itensTotal - pertTotal));
-	int indCont = 0;
 	ItemNode* itemAtual, *vizinhoAtual;
 	Mochila* novaSolucao;
 
@@ -226,7 +225,7 @@ Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade){
 		indicesNaoPerturbados[i] = indice;
 	}
 
-	// Criar uma cópia com os índices não perturbados
+	// Criar uma solução com os índices não perturbados
 	for(int i = 0; i < solucao->itensTotal; i++){
 		itemAtual = solucao->listaItens;
 		for(int j = 0; j < indicesNaoPerturbados[i]; j++){
@@ -235,10 +234,10 @@ Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade){
 		AdicionarItem(novaSolucao, itemAtual);
 	}	
 
-	int naoEncontrou = 0;
 	// Adiciona itens aleatórios da vizinhança 
-	// Sai se não conseguir encontrar itens para adicionar duranco N iterações
-	while(naoEncontrou < LIMITE_ITERACOES_SEM_MELHORA){ 
+	// Sai do loop se não conseguir encontrar itens para adicionar durante N iterações
+	int naoEncontrou = 0;
+	while(naoEncontrou <= LIMITE_ITERACOES_SEM_MELHORA){ 
 		
 		// Escolhe qual vizinho usar
 		int vizinhoAleatorio = rand()%solucao->itensTotal;
@@ -250,12 +249,12 @@ Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade){
 		// Escolhe um item do vizinho
 		int totalItensVizinho = memoria[vizinhoAtual->itemPtr->indice]->itensTotal;
 		for(int j = 0; j < totalItensVizinho; j++){
-			int itemAleatorio = rand()%(memoria[vizinhoAtual->itemPtr->indice]->itensTotal);
+			int itemAleatorio = rand()%totalItensVizinho;
 			itemAtual = memoria[vizinhoAtual->itemPtr->indice]->listaItens;
 			for(int k = 0; k < itemAleatorio; k++){
 				itemAtual = itemAtual->proximo;
 			}
-			if((novaSolucao->pesoTotal + itemAtual->itemPtr->peso) < capacidade){
+			if((novaSolucao->pesoTotal + itemAtual->itemPtr->peso) <= capacidade){
 				AdicionarItem(novaSolucao, itemAtual);
 				naoEncontrou = 0;
 				break;
@@ -263,7 +262,7 @@ Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade){
 		}
 		naoEncontrou++;		
 	}
-	
+	return novaSolucao;	
 }
 
 // Apenas para teste
