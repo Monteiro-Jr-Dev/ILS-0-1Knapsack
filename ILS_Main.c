@@ -17,13 +17,8 @@ int main(int argc, char *argv[]){
 	int mediaDistancia;
 	float mediaPeso;
 	float raioVizinhanca;
-	/* Modificador de vizinhança
-	* Se for muito pequeno, as soluções da vizinhança não vão ter itens suficiente para adicionar
-	* Se for muito grande, muitas soluções da vizinhança ficam iguais
-	* Deve ser ajustado de acordo com a densidade dos pontos no plano
-	* (Levar em consideração que as distâncias estão ao quadrado)
-	*/
-	float modificadorVizinhanca = 9;
+	ItemNode *atual, *proximo;
+	
 
 	// Leitura dos argumentos de entrada
 	opcao = getopt(argc, argv, "g:a:");
@@ -39,59 +34,44 @@ int main(int argc, char *argv[]){
 			
 			// Marcador para tempo de execução
 			inicio = clock();
-	
+			
+			// Ordenar Candidatos na proporção valor/peso
+			OrdenarCandidatos(conjuntoCandidatos, quantidadeItens, &vetorDistancia);
+
+			// Gerar vizinhança
+			Vetor2 vetorZero = {0,0};
+			mediaDistancia = DistanciaQuadrada(vetorZero, vetorDistancia);
+			raioVizinhanca = (capacidadeMochila/mediaPeso)*mediaDistancia*MODIFICADOR_RAIO_VIZINHANCA;
+			unsigned char** matrizAdj = GerarVizinhanca(conjuntoCandidatos, raioVizinhanca, quantidadeItens);
+			
+			// Cria memória (Vetor de mochilas)
+			memoria = (Mochila**) malloc(sizeof(Mochila*)*quantidadeItens);		
+			for(int i = 0; i < quantidadeItens; i++){
+				memoria[i] = NULL;
+			}	
+
 			// Escolhe qual algoritmo rodar: (a) = SIA, BLG; (g) = SIG, BLG;
 			// SIA = Solução Inicial Aleatória; SIG = Solução Inicial Gulosa
 			// BLG = Busca Local (com Guloso)
 			switch(opcao){
 				case 'g':	
-
-					// Ordenar Candidatos na proporção valor/peso
-					OrdenarCandidatos(conjuntoCandidatos, quantidadeItens, &vetorDistancia);	
-
-					// Gerar vizinhança
-					Vetor2 vetorZero = {0,0};
-					mediaDistancia = DistanciaQuadrada(vetorZero, vetorDistancia);
-					raioVizinhanca = (capacidadeMochila/mediaPeso)*mediaDistancia*modificadorVizinhanca;
-					unsigned char** matrizAdj = GerarVizinhanca(conjuntoCandidatos, raioVizinhanca, quantidadeItens);	
-
-					// Cria memória (Vetor de mochilas)
-					memoria = (Mochila**) malloc(sizeof(Mochila*)*quantidadeItens);		
-					for(int i = 0; i < quantidadeItens; i++){
-						memoria[i] = NULL;
-					}							
-					
 					// Gerar solução inicial
-					//solucao = SolucaoInicalGulosa(conjuntoCandidatos, memoria, quantidadeItens, capacidadeMochila);
-					solucao = SolucaoInicialAleatoria(conjuntoCandidatos, quantidadeItens, capacidadeMochila);
-					// Gera soluções para todos os vizinhos
-					ImprimirMochila(solucao);
-					for(int i = 0; i < quantidadeItens; i++){
-						BuscaNoVizinho(conjuntoCandidatos, i, matrizAdj, memoria, quantidadeItens, capacidadeMochila);
-					}
-
-					// Busca iterada
-					solucao =  BuscaLocal(solucao, 0, conjuntoCandidatos, matrizAdj, memoria, quantidadeItens, capacidadeMochila);
-					break;
-					for(int i = 0; i < QUANTIDADE_BUSCAS; i++){
-						if(solucao2->valorTotal > solucao->valorTotal){
-							solucao = solucao2;
-						}
-					}
+					solucao = SolucaoInicalGulosa(conjuntoCandidatos, memoria, quantidadeItens, capacidadeMochila);
 				break;
 
 				case 'a':	
 					// Gerar uma solução inicial aleatória
 					solucao = SolucaoInicialAleatoria(conjuntoCandidatos, quantidadeItens, capacidadeMochila);
-					ImprimirMochila(solucao);
-					printf("\nRESTANTE NAO IMPLEMENTADO\n");	
-					// Monitorar tempo de execução
-					fim = clock();
-					printf("\n--\nTempo de execucao: %.5f segundos\n", (float)(fim - inicio)/CLOCKS_PER_SEC);	
-					return 1;		
 				break;
-				
 			}
+
+			// Gera soluções para todos os vizinhos
+			for(int i = 0; i < quantidadeItens; i++){
+				BuscaNoVizinho(conjuntoCandidatos, i, matrizAdj, memoria, quantidadeItens, capacidadeMochila);
+			}
+
+			// Busca iterada
+			solucao =  BuscaLocal(solucao, conjuntoCandidatos, matrizAdj, memoria, quantidadeItens, capacidadeMochila);
 		} else {
 			// Problema de argumento
 			fprintf(stderr, "Arquivo inexistente\n");

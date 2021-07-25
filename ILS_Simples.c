@@ -102,75 +102,55 @@ unsigned char** GerarVizinhanca(Item* candidatos, float raioMax, int quant){
     return matriz;
 }
 
-Mochila* BuscaLocal(Mochila* solucaoMelhorGeral, int indicePivo, Item* conjuntoCandidatos, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens, int capacidadeMochila){
+Mochila* BuscaLocal(Mochila* solucaoMelhorGeral, Item* conjuntoCandidatos, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens, int capacidadeMochila){
 	Mochila *solucaoPerturbada, *solucaoMelhorLocal;
 	int iteCont = 0, indicePerturbado, cont = 0, iteracoesSemMelhora = 0;	
 	ItemNode* itemAtual;
-	int controlePerturbacao = LIMITE_ITERACOES_SEM_MELHORA*0.5;
-	int contPert = 0;
+	int controlePerturbacao = LIMITE_ITERACOES_SEM_MELHORA*RESET_PERTURBACAO;
+	int contPert = 0, indiceAleatorio;
 
-	indicePerturbado = indicePivo;
 	solucaoMelhorLocal = solucaoMelhorGeral;
 	solucaoPerturbada = solucaoMelhorGeral;
-	
-	
-
 
 	// Verificar se não consegue encontrar uma solução melhor durante um longo período
 	while(iteracoesSemMelhora < LIMITE_ITERACOES_SEM_MELHORA){
 
-		int* posVizinhos = (int*)malloc(sizeof(int)*(solucaoPerturbada->itensTotal + 1));	
-		if(posVizinhos == NULL){
-			printf("Malloc falhou em BuscaLocal");
-			exit(0);
+		// Seleciona um indice (de forma aleatória) da solução perturbada para usar como base
+		itemAtual = solucaoPerturbada->listaItens;	
+		indiceAleatorio = rand()%solucaoPerturbada->itensTotal;
+		for(int i = 0; i < indiceAleatorio; i++){
+			itemAtual = itemAtual->proximo;
 		}
+		indicePerturbado = itemAtual->itemPtr->indice;
 
 		// Faz busca local usando os itens da solução perturbada como base
+		// Escolhe a melhor entre a as soluções da vizinhança (incluindo o pivo) da solução perturbada
 		cont = 0;
 		itemAtual = solucaoPerturbada->listaItens;	
-		posVizinhos[cont++] = indicePerturbado;	
-		for(int i = 0; i < solucaoPerturbada->itensTotal; i++){
-			// Guardar a posição dos vizinhos no vetor de candidatos
-            posVizinhos[cont++] = itemAtual->itemPtr->indice;
-			/*
-			// Calcula apenas se solução do item não existe na memória
-			if(memoria[itemAtual->itemPtr->indice] == NULL){
-				BuscaNoVizinho(conjuntoCandidatos, itemAtual->itemPtr->indice, matrizAdj, memoria, quantidadeItens, capacidadeMochila);
-			}
-			*/
-			itemAtual = itemAtual->proximo;
-		}			
-		
-		/*
-		// Calcula a solução do índice pivô, caso já não tenha feito (A vizinhança inclui o pivô)
-		if(memoria[indicePivo] == NULL){
-			BuscaNoVizinho(conjuntoCandidatos, indicePivo, matrizAdj, memoria, quantidadeItens, capacidadeMochila);
-		}
-		*/
-		
-		
-		// Escolher a melhor entre a as soluções da vizinhança (incluindo o pivo) da solução perturbada
 		solucaoMelhorLocal = memoria[indicePerturbado];
+
 		if(solucaoMelhorLocal->valorTotal < solucaoPerturbada->valorTotal){
 			if(solucaoMelhorLocal->id == -1){
 				//DestruirMochila(solucaoMelhorLocal);
 			}
 			solucaoMelhorLocal = solucaoPerturbada;
 		}
-	
 
+		if(solucaoMelhorLocal->valorTotal < memoria[indicePerturbado]->valorTotal){
+			if(solucaoMelhorLocal->id == -1){
+				//DestruirMochila(solucaoMelhorLocal);
+			}
+			solucaoMelhorLocal = memoria[indicePerturbado];
+		}
 
-		for(int i = 0; i < solucaoPerturbada->itensTotal + 1; i++){
-			if(solucaoMelhorLocal->valorTotal < memoria[posVizinhos[i]]->valorTotal){
+		for(int i = 0; i < solucaoPerturbada->itensTotal; i++){
+			if(solucaoMelhorLocal->valorTotal < memoria[itemAtual->itemPtr->indice]->valorTotal){
 				if(solucaoMelhorLocal->id == -1){
 					//DestruirMochila(solucaoMelhorLocal);
 				}
-				solucaoMelhorLocal = memoria[posVizinhos[i]];
+				solucaoMelhorLocal = memoria[itemAtual->itemPtr->indice];
 			}
 		}			
-
-		free(posVizinhos);
-		
 
 		// Atualiza contador de iterações sem melhora
 		if(solucaoMelhorLocal->valorTotal <= solucaoMelhorGeral->valorTotal){
@@ -192,27 +172,13 @@ Mochila* BuscaLocal(Mochila* solucaoMelhorGeral, int indicePivo, Item* conjuntoC
 		}else{
 			solucaoPerturbada = Pertubacao(solucaoMelhorLocal, memoria, capacidadeMochila);
 		}
-		
-		// Seleciona o menor indice (onde valor/peso é maior) da solução perturbada para usar como base
-		itemAtual = solucaoPerturbada->listaItens;	
-		for (int i = 0; i < solucaoPerturbada->itensTotal; i++){
-			if(i == 0){
-				indicePerturbado = itemAtual->itemPtr->indice;
-			}else{
-				if(indicePerturbado > itemAtual->itemPtr->indice){
-					indicePerturbado = itemAtual->itemPtr->indice;
-				}
-			}			
-			itemAtual = itemAtual->proximo;
-		}
-		
 
-		//solucaoPerturbada = BuscaLocal(solucaoNova, indicePerturbado, conjuntoCandidatos, matrizAdj, memoria, quantidadeItens, capacidadeMochila, iteCont);
-		if(solucaoPerturbada->valorTotal > solucaoMelhorLocal->valorTotal){
+		// Verifica se a perturbação gerou uma solução melhor
+		if(solucaoPerturbada->valorTotal > solucaoMelhorGeral->valorTotal){
 			if(solucaoMelhorLocal->id == -1){
-				//DestruirMochila(solucaoMelhorLocal);
+				//DestruirMochila(solucaoMelhorGeral);
 			}
-			solucaoMelhorLocal = solucaoPerturbada;
+			solucaoMelhorGeral = solucaoPerturbada;
 		}
 	}
 	return solucaoMelhorGeral;
@@ -367,3 +333,4 @@ static void _imprimirMatriz(unsigned char** mat, int quant){
 		printf("\n");
 	}
 }
+

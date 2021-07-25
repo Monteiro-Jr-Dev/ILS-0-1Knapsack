@@ -48,21 +48,15 @@ void AdicionarItem(Mochila* mochila, Item* item){
 }
 
 void DestruirMochila(Mochila* mochila){
-	if(mochila != NULL){
-		ItemNode *itemAtual, *itemProximo;
-		itemAtual = mochila->listaItens;
-		if(itemAtual != NULL){
-			itemProximo = itemAtual->proximo;
-			while(itemAtual != NULL){
-				free(itemAtual);
-				itemAtual = itemProximo;
-				if(itemProximo != NULL){
-					itemProximo = itemProximo->proximo;
-				}
-			}
+
+	ItemNode* no = mochila->listaItens, *noP = no->proximo;
+	free(mochila);
+	while(no != NULL){
+		free(no);
+		no = noP;
+		if(noP != NULL){
+			noP = noP->proximo;
 		}
-		
-		free(mochila);
 	}
 }
 

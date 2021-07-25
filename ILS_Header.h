@@ -1,6 +1,14 @@
-#define LIMITE_ITERACOES_SEM_MELHORA 1000
+#define LIMITE_ITERACOES_SEM_MELHORA 50
 #define QUANTIDADE_BUSCAS 10
-#define GRAU_PERTURBACAO 0.3 // Portentagem da solução que será perturbada
+#define GRAU_PERTURBACAO 0.5 // Portentagem da solução que será perturbada
+#define RESET_PERTURBACAO 0.2
+#define MODIFICADOR_RAIO_VIZINHANCA 16
+/* Modificador de vizinhança
+	* Se for muito pequeno, as soluções da vizinhança não vão ter itens suficiente para adicionar
+	* Se for muito grande, muitas soluções da vizinhança ficam iguais
+	* Deve ser ajustado de acordo com a densidade dos pontos no plano
+	* (Levar em consideração que as distâncias estão ao quadrado)
+*/
 
 typedef struct _item Item;
 typedef struct _itemNode ItemNode;
@@ -53,7 +61,7 @@ Mochila* SolucaoInicalGulosa(Item* candidatos, Mochila** memoria, int quantidade
 Mochila* SolucaoInicialAleatoria(Item* candidatos, int quantidade, int capacidade);
 unsigned char** CriarMatrizAdjacencia(int quantidade);
 unsigned char** GerarVizinhanca(Item* candidatos, float raioMax, int quant);
-Mochila* BuscaLocal(Mochila* solucaoMelhor, int indicePivo, Item* conjuntoCandidatos, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens, int capacidadeMochila);
+Mochila* BuscaLocal(Mochila* solucaoMelhor, Item* conjuntoCandidatos, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens, int capacidadeMochila);
 static void _imprimirMatriz(unsigned char** mat, int quant); // Somente para teste
 Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade);
 void BuscaNoVizinho(Item* conjuntoCandidatos, int indicePivo, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens, int capacidadeMochila);
