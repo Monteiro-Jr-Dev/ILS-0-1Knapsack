@@ -88,7 +88,7 @@ Mochila* CriarMochila(int indicePivo){
 }
 
 void ImprimirMochila(Mochila* mochila){
-	printf("--\nMochila: \n");
+	printf("\n--\nMochila: \n");
 	printf("Valor total: %d Peso total: %d  Total de itens: %d\n",mochila->valorTotal, mochila->pesoTotal, mochila->itensTotal);
 	printf("--\n");
 	printf("Item a item: (Valor, Peso)\n");

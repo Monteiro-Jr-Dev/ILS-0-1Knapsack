@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
 					
 					// Gerar solução inicial
 					solucao = SolucaoInicalGulosa(conjuntoCandidatos, memoria, quantidadeItens, capacidadeMochila);
-	
+
 					// Gera soluções para todos os vizinhos
 					for(int i = 0; i < quantidadeItens; i++){
 						BuscaNoVizinho(conjuntoCandidatos, i, matrizAdj, memoria, quantidadeItens, capacidadeMochila);

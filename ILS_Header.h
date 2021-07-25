@@ -1,4 +1,4 @@
-#define LIMITE_ITERACOES_SEM_MELHORA 20
+#define LIMITE_ITERACOES_SEM_MELHORA 30
 #define GRAU_PERTURBACAO 0.3 // Portentagem da solução que será perturbada
 
 typedef struct _item Item;
