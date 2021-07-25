@@ -3,15 +3,18 @@
 #include <time.h>
 #include "ILS_Header.h"
 
-Item* LerArquivo(FILE* arquivo, int quantidade){
+Item* LerArquivo(FILE* arquivo, int quantidade, float* mediaPeso){
 	Item* itens = (Item*)malloc(sizeof(Item) * quantidade);
+	*mediaPeso = 0;
 	for(int i = 0; i < quantidade; i++){
 		// Só atribui índices depois de ordenar
 		fscanf(arquivo, " %d", &(itens[i].valor));
 		fscanf(arquivo, " %d", &(itens[i].peso));
 		itens[i].indice = 0;
 		itens[i].proporcao = (float)itens[i].valor/itens[i].peso;
+		*mediaPeso += itens[i].peso;
 	}
+	*mediaPeso /= quantidade;
 	return itens;
 }
 
@@ -60,6 +63,16 @@ void DestruirMemoria(Mochila** mem, int quant){
 		free(mem[i]);
 	}
 	free(mem);
+}
+
+Mochila* CriarMochila(int indicePivo){
+	Mochila* novaMochila = (Mochila*)malloc(sizeof(Mochila));
+	novaMochila->id = indicePivo;
+	novaMochila->itensTotal = 0;
+	novaMochila->listaItens = NULL;
+	novaMochila->pesoTotal = 0;
+	novaMochila->valorTotal = 0;
+	return novaMochila;
 }
 
 void ImprimirMochila(Mochila* mochila){
