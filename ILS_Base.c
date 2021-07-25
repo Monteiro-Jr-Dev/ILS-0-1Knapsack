@@ -5,6 +5,10 @@
 
 Item* LerArquivo(FILE* arquivo, int quantidade, float* mediaPeso){
 	Item* itens = (Item*)malloc(sizeof(Item) * quantidade);
+	if(itens == NULL){
+		printf("Malloc falhou em LerArquivo");
+		exit(0);
+	}
 	*mediaPeso = 0;
 	for(int i = 0; i < quantidade; i++){
 		// Só atribui índices depois de ordenar
@@ -29,6 +33,10 @@ void CopiarItem(Item* destino, Item* origem){
 
 void AdicionarItem(Mochila* mochila, Item* item){
 	ItemNode* itemNovo = (ItemNode*)malloc(sizeof(ItemNode));
+	if(itemNovo == NULL){
+		printf("Malloc falhou em AdicionarItem");
+		exit(0);
+	}
 	itemNovo->itemPtr = item;
 	itemNovo->proximo = mochila->listaItens;
 	mochila->listaItens = itemNovo;
@@ -67,6 +75,10 @@ void DestruirMemoria(Mochila** mem, int quant){
 
 Mochila* CriarMochila(int indicePivo){
 	Mochila* novaMochila = (Mochila*)malloc(sizeof(Mochila));
+	if(novaMochila == NULL){
+		printf("Malloc falhou em CriarMohila");
+		exit(0);
+	}
 	novaMochila->id = indicePivo;
 	novaMochila->itensTotal = 0;
 	novaMochila->listaItens = NULL;
