@@ -11,7 +11,7 @@ int main(int argc, char *argv[]){
 	int capacidadeMochila;
 	int quantidadeItens;
 	Item* conjuntoCandidatos;
-	Mochila* solucao;
+	Mochila *solucao, *solucao2;
 	Mochila** memoria;
 	Vetor2 vetorDistancia;
 	int mediaDistancia;
@@ -62,16 +62,22 @@ int main(int argc, char *argv[]){
 					}							
 					
 					// Gerar solução inicial
-					solucao = SolucaoInicalGulosa(conjuntoCandidatos, memoria, quantidadeItens, capacidadeMochila);
-
+					//solucao = SolucaoInicalGulosa(conjuntoCandidatos, memoria, quantidadeItens, capacidadeMochila);
+					solucao = SolucaoInicialAleatoria(conjuntoCandidatos, quantidadeItens, capacidadeMochila);
 					// Gera soluções para todos os vizinhos
+					ImprimirMochila(solucao);
 					for(int i = 0; i < quantidadeItens; i++){
 						BuscaNoVizinho(conjuntoCandidatos, i, matrizAdj, memoria, quantidadeItens, capacidadeMochila);
 					}
 
 					// Busca iterada
-					solucao =  BuscaLocal(solucao, 0, conjuntoCandidatos, matrizAdj, memoria, quantidadeItens, capacidadeMochila, 0);
-
+					solucao =  BuscaLocal(solucao, 0, conjuntoCandidatos, matrizAdj, memoria, quantidadeItens, capacidadeMochila);
+					break;
+					for(int i = 0; i < QUANTIDADE_BUSCAS; i++){
+						if(solucao2->valorTotal > solucao->valorTotal){
+							solucao = solucao2;
+						}
+					}
 				break;
 
 				case 'a':	

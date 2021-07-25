@@ -5,7 +5,8 @@
 #include "ILS_Header.h"
 
 Mochila* SolucaoInicialAleatoria(Item* candidatos, int quantidade, int capacidade){
-	int vetor[quantidade], pos;
+	int pos;
+	int *vetor = (int*)malloc(sizeof(int)*quantidade);
 	Mochila* solucao = CriarMochila(-1);
 	srand(time(NULL));
 	for(int i = 0; i < quantidade; i++){
@@ -15,19 +16,12 @@ Mochila* SolucaoInicialAleatoria(Item* candidatos, int quantidade, int capacidad
 		pos = rand()%quantidade;
 		if(!vetor[pos]){
 			if(solucao->pesoTotal + candidatos[pos].peso < capacidade){
-				Item* iPtr = (Item*)malloc(sizeof(Item));
-				if(iPtr == NULL){
-					printf("Malloc falhou em SolucaoInicialAleatoria");
-					exit(0);
-				}
-				iPtr->peso = candidatos[pos].peso;
-				iPtr->valor = candidatos[pos].valor;
-				AdicionarItem(solucao, iPtr);
+				AdicionarItem(solucao, &candidatos[pos]);
 				vetor[pos] = 1;
 			}
 		}
 	}
-
+	free(vetor);
 	return solucao;
 }
 
@@ -108,23 +102,34 @@ unsigned char** GerarVizinhanca(Item* candidatos, float raioMax, int quant){
     return matriz;
 }
 
-Mochila* BuscaLocal(Mochila* solucao, int indicePivo, Item* conjuntoCandidatos, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens, int capacidadeMochila, int iteracoesSemMelhora){
-	//printf(".");// Indicar que está rodando
-	Mochila* solucaoNova, *solucaoRetorno;
-	int iteCont = 0, indice, cont = 0;
-	int* posVizinhos = (int*)malloc(sizeof(int)*(solucao->itensTotal + 1));	
-	if(posVizinhos == NULL){
-		printf("Malloc falhou em BuscaLocal");
-		exit(0);
-	}
+Mochila* BuscaLocal(Mochila* solucaoMelhorGeral, int indicePivo, Item* conjuntoCandidatos, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens, int capacidadeMochila){
+	Mochila *solucaoPerturbada, *solucaoMelhorLocal;
+	int iteCont = 0, indicePerturbado, cont = 0, iteracoesSemMelhora = 0;	
+	ItemNode* itemAtual;
+	int controlePerturbacao = LIMITE_ITERACOES_SEM_MELHORA*0.5;
+	int contPert = 0;
+
+	indicePerturbado = indicePivo;
+	solucaoMelhorLocal = solucaoMelhorGeral;
+	solucaoPerturbada = solucaoMelhorGeral;
+	
+	
+
 
 	// Verificar se não consegue encontrar uma solução melhor durante um longo período
-	if(iteracoesSemMelhora < LIMITE_ITERACOES_SEM_MELHORA){
+	while(iteracoesSemMelhora < LIMITE_ITERACOES_SEM_MELHORA){
 
-		// Faz busca local usando os itens da solução atual como base
-		ItemNode* itemAtual = solucao->listaItens;	
-		posVizinhos[cont++] = indicePivo;	
-		for(int i = 0; i < solucao->itensTotal; i++){
+		int* posVizinhos = (int*)malloc(sizeof(int)*(solucaoPerturbada->itensTotal + 1));	
+		if(posVizinhos == NULL){
+			printf("Malloc falhou em BuscaLocal");
+			exit(0);
+		}
+
+		// Faz busca local usando os itens da solução perturbada como base
+		cont = 0;
+		itemAtual = solucaoPerturbada->listaItens;	
+		posVizinhos[cont++] = indicePerturbado;	
+		for(int i = 0; i < solucaoPerturbada->itensTotal; i++){
 			// Guardar a posição dos vizinhos no vetor de candidatos
             posVizinhos[cont++] = itemAtual->itemPtr->indice;
 			/*
@@ -134,7 +139,7 @@ Mochila* BuscaLocal(Mochila* solucao, int indicePivo, Item* conjuntoCandidatos, 
 			}
 			*/
 			itemAtual = itemAtual->proximo;
-		}		
+		}			
 		
 		/*
 		// Calcula a solução do índice pivô, caso já não tenha feito (A vizinhança inclui o pivô)
@@ -144,62 +149,166 @@ Mochila* BuscaLocal(Mochila* solucao, int indicePivo, Item* conjuntoCandidatos, 
 		*/
 		
 		
-		// Escolher a melhor entre a solução anterior e as soluções da vizinhança (incluindo o pivo)
-		solucaoNova = memoria[indicePivo];
-		if(solucaoNova->valorTotal < solucao->valorTotal){
-			solucaoNova = solucao;
+		// Escolher a melhor entre a as soluções da vizinhança (incluindo o pivo) da solução perturbada
+		solucaoMelhorLocal = memoria[indicePerturbado];
+		if(solucaoMelhorLocal->valorTotal < solucaoPerturbada->valorTotal){
+			if(solucaoMelhorLocal->id == -1){
+				//DestruirMochila(solucaoMelhorLocal);
+			}
+			solucaoMelhorLocal = solucaoPerturbada;
 		}
-		for(int i = 0; i < conjuntoCandidatos[indicePivo].quantVizinhos; i++){
-			if(solucaoNova->valorTotal < memoria[posVizinhos[i]]->valorTotal){
-				solucaoNova = memoria[posVizinhos[i]];
+	
+
+
+		for(int i = 0; i < solucaoPerturbada->itensTotal + 1; i++){
+			if(solucaoMelhorLocal->valorTotal < memoria[posVizinhos[i]]->valorTotal){
+				if(solucaoMelhorLocal->id == -1){
+					//DestruirMochila(solucaoMelhorLocal);
+				}
+				solucaoMelhorLocal = memoria[posVizinhos[i]];
 			}
 		}			
 
+		free(posVizinhos);
+		
+
 		// Atualiza contador de iterações sem melhora
-		if(solucaoNova == solucao){
-			iteCont = iteracoesSemMelhora + 1;
+		if(solucaoMelhorLocal->valorTotal <= solucaoMelhorGeral->valorTotal){
+			iteracoesSemMelhora++;
+			contPert++;
 		}else{
-			iteCont = 0;
-			if(solucao->id == -1){
-				DestruirMochila(solucao);
+			iteracoesSemMelhora = 0;
+			contPert = 0;
+			if(solucaoMelhorLocal->id == -1){
+				//DestruirMochila(solucaoMelhorLocal);
 			}
-			solucao = solucaoNova;
+			solucaoMelhorGeral = solucaoMelhorLocal;
 		}
 
 		// Perturbação
-		solucaoNova = Pertubacao(solucao, memoria, capacidadeMochila);
-
+		if(contPert == controlePerturbacao){
+			contPert = 0;
+			solucaoPerturbada = Pertubacao(solucaoMelhorGeral, memoria, capacidadeMochila);
+		}else{
+			solucaoPerturbada = Pertubacao(solucaoMelhorLocal, memoria, capacidadeMochila);
+		}
 		
-		// Seleciona o menor indice (onde valor/peso é maior) da solução nova para usar como base
-		itemAtual = solucao->listaItens;	
-		for (int i = 0; i < solucao->itensTotal; i++){
+		// Seleciona o menor indice (onde valor/peso é maior) da solução perturbada para usar como base
+		itemAtual = solucaoPerturbada->listaItens;	
+		for (int i = 0; i < solucaoPerturbada->itensTotal; i++){
 			if(i == 0){
-				indice = itemAtual->itemPtr->indice;
+				indicePerturbado = itemAtual->itemPtr->indice;
 			}else{
-				if(indice > itemAtual->itemPtr->indice){
-					indice = itemAtual->itemPtr->indice;
+				if(indicePerturbado > itemAtual->itemPtr->indice){
+					indicePerturbado = itemAtual->itemPtr->indice;
 				}
 			}			
 			itemAtual = itemAtual->proximo;
 		}
+		
 
-		solucaoRetorno = BuscaLocal(solucaoNova, indice, conjuntoCandidatos, matrizAdj, memoria, quantidadeItens, capacidadeMochila, iteCont);
-		if(solucaoRetorno->valorTotal > solucao->valorTotal){
-			if(solucao->id == -1){
-				DestruirMochila(solucao);
+		//solucaoPerturbada = BuscaLocal(solucaoNova, indicePerturbado, conjuntoCandidatos, matrizAdj, memoria, quantidadeItens, capacidadeMochila, iteCont);
+		if(solucaoPerturbada->valorTotal > solucaoMelhorLocal->valorTotal){
+			if(solucaoMelhorLocal->id == -1){
+				//DestruirMochila(solucaoMelhorLocal);
 			}
-			solucao = solucaoRetorno;
-		}else if(solucaoNova->valorTotal > solucao->valorTotal){
-			if(solucao->id == -1){
-				DestruirMochila(solucao);
-			}
-			solucao = solucaoNova;
+			solucaoMelhorLocal = solucaoPerturbada;
 		}
 	}
+	return solucaoMelhorGeral;
+}
 
-	// PORQUE ESSE FREE TÁ TRAVANDO O PROGRAMA?
-	free(posVizinhos);
-	return solucao;
+Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade){ 	
+
+	srand(time(NULL));
+	//int pertTotal = (int)(solucao->itensTotal * GRAU_PERTURBACAO) + 1;	
+	int pertTotal = ceil(solucao->itensTotal * GRAU_PERTURBACAO);	
+	int naoPerturbados = solucao->itensTotal - pertTotal;
+	int repetido;
+	ItemNode *itemAtual, *vizinhoAtual, *itemSolucao;
+	// A solução tem índice -1 pois não pertence à memória, não será salva 
+	Mochila* novaSolucao = CriarMochila(-1);
+
+	
+	// Escolhe índices que não serão perturbados
+	int* indicesNaoPerturbados = (int*)malloc(sizeof(int)*naoPerturbados);
+	if(!indicesNaoPerturbados){
+		printf("Malloc falhou em Perturcao");
+		exit(0);
+	}
+	for(int i = 0; i < naoPerturbados; i++){
+		int indice = rand()%solucao->itensTotal;
+		repetido = 0;
+		for(int j = i - 1; j >= 0; j--){
+			if(indicesNaoPerturbados[j] == indice){
+				i--;
+				repetido = 1;
+				break;
+			}
+		}
+		if(!repetido){
+			indicesNaoPerturbados[i] = indice;
+		}
+	}
+	
+	// Criar uma solução com os índices não perturbados
+	for(int i = 0; i < naoPerturbados; i++){
+		itemAtual = solucao->listaItens;
+		for(int j = 0; j < indicesNaoPerturbados[i]; j++){
+			itemAtual = itemAtual->proximo;
+		}
+		AdicionarItem(novaSolucao, itemAtual->itemPtr);
+	}	
+	free(indicesNaoPerturbados);
+
+	// Adiciona itens aleatórios da vizinhança 
+	// Sai do loop se não conseguir encontrar itens para adicionar durante N iterações
+	int naoEncontrou = 0;
+	while(naoEncontrou <= LIMITE_ITERACOES_SEM_MELHORA){ 
+
+		// Escolhe qual vizinho usar
+		int vizinhoAleatorio = rand()%solucao->itensTotal;
+		vizinhoAtual = NULL; // Só pra ter certeza que estava vazio
+		vizinhoAtual = solucao->listaItens;
+		for(int j = 0; j < vizinhoAleatorio; j++){
+			vizinhoAtual = vizinhoAtual->proximo;
+		}		
+
+		// Escolhe um item do vizinho
+		int totalItensVizinho = memoria[vizinhoAtual->itemPtr->indice]->itensTotal;		
+		for(int j = 0; j < totalItensVizinho; j++){ // (j < totalItensVizinho) pra evitar loop infinito
+			int itemAleatorio = rand()%totalItensVizinho;
+			
+			itemAtual = memoria[vizinhoAtual->itemPtr->indice]->listaItens;
+			for(int k = 0; k < itemAleatorio; k++){
+				itemAtual = itemAtual->proximo;
+			}
+
+			// Verifica se a solução já tem o item escolhido
+			repetido = 0;
+			itemSolucao = novaSolucao->listaItens;
+			for(int k = 0; k < novaSolucao->itensTotal; k++){
+				if(itemSolucao->itemPtr->indice == itemAtual->itemPtr->indice){
+					repetido = 1;
+					break;
+				}
+				itemSolucao = itemSolucao->proximo;
+			}
+
+			if(repetido){
+				continue;
+			}else{
+				// Verifica se a capacidade da mochila comporta o novo item antes de adicionar			
+				if((novaSolucao->pesoTotal + itemAtual->itemPtr->peso) <= capacidade){
+					AdicionarItem(novaSolucao, itemAtual->itemPtr);
+					naoEncontrou = 0;
+					break;
+				}		
+			}
+		}
+		naoEncontrou++;		
+	}
+	return novaSolucao;	
 }
 
 // Encontra (e guarda na memória) a solução de cada vizinho utilizando guloso
@@ -241,102 +350,7 @@ void BuscaNoVizinho(Item* conjuntoCandidatos, int indicePivo, unsigned char** ma
 	}	
 }
 
-Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade){ 	
-	
-	/*
-	* Esse bloco é inútil, mas quando apaga o código para de funcionar. WTF
-	*/
-	ItemNode* ia = solucao->listaItens;
-	for(int i = 0; i < solucao->itensTotal; i++){
-		printf (" %d", ia->itemPtr->indice);
-		ia = ia->proximo;
-	}
 
-	srand(time(NULL));
-	//int pertTotal = (int)(solucao->itensTotal * GRAU_PERTURBACAO) + 1;	
-	int pertTotal = ceil(solucao->itensTotal * GRAU_PERTURBACAO);	
-	int naoPerturbados = solucao->itensTotal - pertTotal;
-	ItemNode *itemAtual, *vizinhoAtual, *itemSolucao;
-	// A solução tem índice -1 pois não pertence à memória, não será salva 
-	Mochila* novaSolucao = CriarMochila(-1);
-	
-	// Escolhe índices que não serão perturbados
-	int* indicesNaoPerturbados = (int*)malloc(sizeof(int)*naoPerturbados);
-	if(!indicesNaoPerturbados){
-		printf("Malloc falhou em Perturcao");
-		exit(0);
-	}
-	for(int i = 0; i < naoPerturbados; i++){
-		int indice = rand()%solucao->itensTotal;
-		for(int j = i - 1; j >= 0; j--){
-			if(indicesNaoPerturbados[j] == indice){
-				i--;
-				break;
-			}
-		}
-		indicesNaoPerturbados[i] = indice;
-	}
-
-	// Criar uma solução com os índices não perturbados
-	for(int i = 0; i < naoPerturbados; i++){
-		itemAtual = solucao->listaItens;
-		for(int j = 0; j < indicesNaoPerturbados[i]; j++){
-			itemAtual = itemAtual->proximo;
-		}
-		AdicionarItem(novaSolucao, itemAtual->itemPtr);
-	}	
-	free(indicesNaoPerturbados);
-
-
-	// Adiciona itens aleatórios da vizinhança 
-	// Sai do loop se não conseguir encontrar itens para adicionar durante N iterações
-	int naoEncontrou = 0;
-	while(naoEncontrou <= LIMITE_ITERACOES_SEM_MELHORA){ 
-
-		// Escolhe qual vizinho usar
-		int vizinhoAleatorio = rand()%solucao->itensTotal;
-		vizinhoAtual = NULL; // Só pra ter certeza que estava vazio
-		vizinhoAtual = solucao->listaItens;
-		for(int j = 0; j < vizinhoAleatorio; j++){
-			vizinhoAtual = vizinhoAtual->proximo;
-		}		
-
-		// Escolhe um item do vizinho
-		int totalItensVizinho = memoria[vizinhoAtual->itemPtr->indice]->itensTotal;		
-		for(int j = 0; j < totalItensVizinho; j++){ // (j < totalItensVizinho) pra evitar loop infinito
-			int itemAleatorio = rand()%totalItensVizinho;
-			
-			itemAtual = memoria[vizinhoAtual->itemPtr->indice]->listaItens;
-			for(int k = 0; k < itemAleatorio; k++){
-				itemAtual = itemAtual->proximo;
-			}
-
-			// Verifica se a solução já tem o item escolhido
-			int repetido = 0;
-			itemSolucao = novaSolucao->listaItens;
-			for(int k = 0; k < novaSolucao->itensTotal; k++){
-				if(itemSolucao->itemPtr->indice == itemAtual->itemPtr->indice){
-					repetido = 1;
-					break;
-				}
-				itemSolucao = itemSolucao->proximo;
-			}
-
-			if(repetido){
-				continue;
-			}
-
-			// Verifica se a capacidade da mochila comporta o novo item antes de adicionar			
-			if((novaSolucao->pesoTotal + itemAtual->itemPtr->peso) <= capacidade){
-				AdicionarItem(novaSolucao, itemAtual->itemPtr);
-				naoEncontrou = 0;
-				break;
-			}		
-		}
-		naoEncontrou++;		
-	}
-	return novaSolucao;	
-}
 
 // Apenas para teste
 static void _imprimirMatriz(unsigned char** mat, int quant){

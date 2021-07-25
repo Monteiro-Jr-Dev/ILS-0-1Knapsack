@@ -94,7 +94,7 @@ void ImprimirMochila(Mochila* mochila){
 	printf("Item a item: (Valor, Peso)\n");
 	ItemNode* no = mochila->listaItens;
 	while(no != NULL){
-		printf("(%d, %d) ", no->itemPtr->valor, no->itemPtr->peso);
+		printf("\n%d - (%d, %d) ",no->itemPtr->indice ,no->itemPtr->valor, no->itemPtr->peso);
 		no = no->proximo;
 	}
 }

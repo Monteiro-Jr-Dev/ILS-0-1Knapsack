@@ -1,4 +1,5 @@
-#define LIMITE_ITERACOES_SEM_MELHORA 30
+#define LIMITE_ITERACOES_SEM_MELHORA 1000
+#define QUANTIDADE_BUSCAS 10
 #define GRAU_PERTURBACAO 0.3 // Portentagem da solução que será perturbada
 
 typedef struct _item Item;
@@ -52,7 +53,7 @@ Mochila* SolucaoInicalGulosa(Item* candidatos, Mochila** memoria, int quantidade
 Mochila* SolucaoInicialAleatoria(Item* candidatos, int quantidade, int capacidade);
 unsigned char** CriarMatrizAdjacencia(int quantidade);
 unsigned char** GerarVizinhanca(Item* candidatos, float raioMax, int quant);
-Mochila* BuscaLocal(Mochila* solucao, int indiceBase, Item* conjuntoCandidatos, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens, int capacidadeMochila, int iteracoesSemMelhora);
+Mochila* BuscaLocal(Mochila* solucaoMelhor, int indicePivo, Item* conjuntoCandidatos, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens, int capacidadeMochila);
 static void _imprimirMatriz(unsigned char** mat, int quant); // Somente para teste
 Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade);
 void BuscaNoVizinho(Item* conjuntoCandidatos, int indicePivo, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens, int capacidadeMochila);
