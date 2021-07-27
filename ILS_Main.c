@@ -1,3 +1,7 @@
+/*
+* Algoritmo ILS para solução da Mochila 0-1
+* Autor: Valmir Monteiro Júnior
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -11,7 +15,7 @@ int main(int argc, char *argv[]){
 	int capacidadeMochila;
 	int quantidadeItens;
 	Item* conjuntoCandidatos;
-	Mochila *solucao, *solucao2;
+	Mochila *solucao;
 	Mochila** memoria;
 	Vetor2 vetorDistancia;
 	int mediaDistancia;
@@ -26,14 +30,13 @@ int main(int argc, char *argv[]){
 	if(optarg != NULL){
 		// Verificar se arquivo existe
 		if((arquivoEntrada = fopen(optarg, "r")) != NULL){	
+			// Marcador para tempo de execução
+			inicio = clock();
 
 			// Ler mochila e ordenar vetor
 			fscanf(arquivoEntrada, "%d", &capacidadeMochila);
 			fscanf(arquivoEntrada, "%d", &quantidadeItens);
 			conjuntoCandidatos = LerArquivo(arquivoEntrada, quantidadeItens, &mediaPeso);			
-			
-			// Marcador para tempo de execução
-			inicio = clock();
 			
 			// Ordenar Candidatos na proporção valor/peso
 			OrdenarCandidatos(conjuntoCandidatos, quantidadeItens, &vetorDistancia);

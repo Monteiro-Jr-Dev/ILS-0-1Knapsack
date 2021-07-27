@@ -1,3 +1,7 @@
+/*
+* Algoritmo ILS para solução da Mochila 0-1
+* Autor: Valmir Monteiro Júnior
+*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -33,14 +37,27 @@ void CopiarItem(Item* destino, Item* origem){
 
 void AdicionarItem(Mochila* mochila, Item* item){
 	ItemNode* itemNovo = (ItemNode*)malloc(sizeof(ItemNode));
+	ItemNode* itemAtual;
 	if(itemNovo == NULL){
 		printf("Malloc falhou em AdicionarItem");
 		exit(0);
 	}
+	
 	itemNovo->itemPtr = item;
+
+	/*
+	if(mochila->itensTotal == 0){
+		mochila->listaItens = itemNovo;
+	}else{
+		itemAtual = mochila->listaItens;
+		for(int i = 0; i < mochila->itensTotal - 1; i++){
+			itemAtual = itemAtual->proximo;
+		}
+		itemAtual->proximo = itemNovo;
+	}
+	*/
 	itemNovo->proximo = mochila->listaItens;
 	mochila->listaItens = itemNovo;
-
 	//Atualiza a mochila
 	(mochila->pesoTotal) += item->peso;
 	(mochila->valorTotal) += item->valor;
@@ -85,10 +102,10 @@ void ImprimirMochila(Mochila* mochila){
 	printf("\n--\nMochila: \n");
 	printf("Valor total: %d Peso total: %d  Total de itens: %d\n",mochila->valorTotal, mochila->pesoTotal, mochila->itensTotal);
 	printf("--\n");
-	printf("Item a item: (Valor, Peso)\n");
+	printf("Itens: (Valor, Peso)\n");
 	ItemNode* no = mochila->listaItens;
 	while(no != NULL){
-		printf("\n%d - (%d, %d) ",no->itemPtr->indice ,no->itemPtr->valor, no->itemPtr->peso);
+		printf(" (%d, %d) ;" ,no->itemPtr->valor, no->itemPtr->peso);
 		no = no->proximo;
 	}
 }

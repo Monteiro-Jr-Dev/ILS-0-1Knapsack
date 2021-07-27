@@ -1,6 +1,7 @@
 /*
+* Algoritmo ILS para solução da Mochila 0-1
 * Código original por Philippe Leal (IFF campus Campos centro)
-* Adaptado por Valmir Monteiro
+* Adaptado por Valmir Monteiro Júnior
 */
 #include <stdio.h>
 #include "ILS_Header.h"
