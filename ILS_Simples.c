@@ -119,7 +119,7 @@ Mochila* BuscaLocal(Mochila* solucaoMelhorGeral, Item* conjuntoCandidatos, unsig
 	// Verificar se não consegue encontrar uma solução melhor durante um longo período
 	while(iteracoesSemMelhora < LIMITE_ITERACOES_SEM_MELHORA){
 		// Busca a melhor solução na vizinhança 
-		itemAtual = solucaoMelhorGeral->listaItens;	
+		itemAtual = solucaoPerturbada->listaItens;	
 		for(int i = 0; i < solucaoPerturbada->itensTotal; i++){
 			if(solucaoMelhorLocal->valorTotal < memoria[itemAtual->itemPtr->indice]->valorTotal){
 				/* Segmentatoin fault (core dumped)
@@ -152,7 +152,7 @@ Mochila* BuscaLocal(Mochila* solucaoMelhorGeral, Item* conjuntoCandidatos, unsig
 		// Perturbação
 		if(contPert == controlePerturbacao){
 			contPert = 0;
-			solucaoPerturbada = Pertubacao(solucaoMelhorGeral, memoria, capacidadeMochila);
+			solucaoPerturbada = memoria[rand()%quantidadeItens];
 		}else{
 			solucaoPerturbada = Pertubacao(solucaoMelhorLocal, memoria, capacidadeMochila);
 		}
@@ -268,10 +268,6 @@ Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade){
 // Encontra (e guarda na memória) a solução de cada vizinho utilizando guloso
 // Usa a matriz de adjacência para montar a solução
 void BuscaNoVizinho(Item* conjuntoCandidatos, int indicePivo, unsigned char** matrizAdj, Mochila** memoria, int quantidadeItens, int capacidadeMochila){
-	/* 	LEMBRAR:
-	* 	- INCLUIR O PIVO NA SOLUÇÃO 
-	* 	- COLUNA -> PIVO -> LINHA (Maior valor proporcional)
-	*/
 
 	// Criar solução e adicionar à memória
 	Mochila* solucaoPivo = CriarMochila(indicePivo);

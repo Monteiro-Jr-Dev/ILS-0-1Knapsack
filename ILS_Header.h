@@ -2,7 +2,7 @@
 * Algoritmo ILS para solução da Mochila 0-1
 * Autor: Valmir Monteiro Júnior
 */
-#define LIMITE_ITERACOES_SEM_MELHORA 3000
+#define LIMITE_ITERACOES_SEM_MELHORA 100
 #define GRAU_PERTURBACAO 0.3 // Portentagem da solução que será perturbada
 #define RESET_PERTURBACAO 0.3
 #define MODIFICADOR_RAIO_VIZINHANCA 16

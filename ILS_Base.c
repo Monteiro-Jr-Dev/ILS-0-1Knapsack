@@ -44,8 +44,12 @@ void AdicionarItem(Mochila* mochila, Item* item){
 	}
 	
 	itemNovo->itemPtr = item;
+	itemNovo->proximo = mochila->listaItens;
+	mochila->listaItens = itemNovo;
 
 	/*
+	// Ordem de inserção diferente
+	// Preferi usar o outro
 	if(mochila->itensTotal == 0){
 		mochila->listaItens = itemNovo;
 	}else{
@@ -56,8 +60,6 @@ void AdicionarItem(Mochila* mochila, Item* item){
 		itemAtual->proximo = itemNovo;
 	}
 	*/
-	itemNovo->proximo = mochila->listaItens;
-	mochila->listaItens = itemNovo;
 	//Atualiza a mochila
 	(mochila->pesoTotal) += item->peso;
 	(mochila->valorTotal) += item->valor;
