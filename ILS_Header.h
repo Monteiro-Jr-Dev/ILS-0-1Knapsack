@@ -44,6 +44,9 @@ struct _vetor2{
 	int y;
 };
 
+// Protótipos ILS_Main
+int NumeroAleatorio();
+
 // Protótipos ILS_Base
 Item* LerArquivo(FILE* arquivo, int quantidade, float* mediaPeso);
 void CopiarItem(Item* destino, Item* origem);

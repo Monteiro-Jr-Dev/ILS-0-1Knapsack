@@ -22,6 +22,7 @@ int main(int argc, char *argv[]){
 	float mediaPeso;
 	float raioVizinhanca;
 	ItemNode *atual, *proximo;
+	srand(time(NULL));
 	
 
 	// Leitura dos argumentos de entrada
@@ -100,4 +101,8 @@ int main(int argc, char *argv[]){
 	printf("\n--\nTempo de execucao: %.5f segundos\n", (float)(fim - inicio)/CLOCKS_PER_SEC);
 
 	return 0;
+}
+
+int NumeroAleatorio(){
+	return rand();
 }

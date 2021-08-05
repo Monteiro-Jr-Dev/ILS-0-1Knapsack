@@ -12,12 +12,12 @@ Mochila* SolucaoInicialAleatoria(Item* candidatos, int quantidade, int capacidad
 	int pos;
 	int *vetor = (int*)malloc(sizeof(int)*quantidade);
 	Mochila* solucao = CriarMochila(-1);
-	srand(time(NULL));
+	//srand(time(NULL));
 	for(int i = 0; i < quantidade; i++){
 		vetor[i] = 0;
 	}
 	for(int i = 0; i < quantidade; i++){
-		pos = rand()%quantidade;
+		pos = NumeroAleatorio()%quantidade;
 		if(!vetor[pos]){
 			if(solucao->pesoTotal + candidatos[pos].peso < capacidade){
 				AdicionarItem(solucao, &candidatos[pos]);
@@ -152,7 +152,7 @@ Mochila* BuscaLocal(Mochila* solucaoMelhorGeral, Item* conjuntoCandidatos, unsig
 		// Perturbação
 		if(contPert == controlePerturbacao){
 			contPert = 0;
-			solucaoPerturbada = memoria[rand()%quantidadeItens];
+			solucaoPerturbada = memoria[NumeroAleatorio()%quantidadeItens];
 		}else{
 			solucaoPerturbada = Pertubacao(solucaoMelhorLocal, memoria, capacidadeMochila);
 		}
@@ -173,7 +173,7 @@ Mochila* BuscaLocal(Mochila* solucaoMelhorGeral, Item* conjuntoCandidatos, unsig
 
 Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade){ 	
 
-	srand(time(NULL));
+	//srand(time(NULL));
 	//int pertTotal = (int)(solucao->itensTotal * GRAU_PERTURBACAO) + 1;	
 	int pertTotal = ceil(solucao->itensTotal * GRAU_PERTURBACAO);	
 	int naoPerturbados = solucao->itensTotal - pertTotal;
@@ -191,7 +191,7 @@ Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade){
 	
 	// Escolhe de forma aleatória índices que não serão perturbados
 	for(int i = 0; i < naoPerturbados; i++){
-		int indice = rand()%solucao->itensTotal;
+		int indice = NumeroAleatorio()%solucao->itensTotal;
 		repetido = 0;
 		for(int j = i - 1; j >= 0; j--){
 			if(indicesNaoPerturbados[j] == indice){
@@ -221,7 +221,7 @@ Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade){
 	while(naoEncontrou <= LIMITE_ITERACOES_SEM_MELHORA){ 
 
 		// Escolhe qual vizinho usar
-		int vizinhoAleatorio = rand()%solucao->itensTotal;
+		int vizinhoAleatorio = NumeroAleatorio()%solucao->itensTotal;
 		vizinhoAtual = NULL; // Só pra ter certeza que estava vazio
 		vizinhoAtual = solucao->listaItens;
 		for(int j = 0; j < vizinhoAleatorio; j++){
@@ -231,7 +231,7 @@ Mochila* Pertubacao(Mochila* solucao, Mochila** memoria, int capacidade){
 		// Escolhe um item do vizinho
 		int totalItensVizinho = memoria[vizinhoAtual->itemPtr->indice]->itensTotal;		
 		for(int j = 0; j < totalItensVizinho; j++){ // (j < totalItensVizinho) pra evitar loop infinito
-			int itemAleatorio = rand()%totalItensVizinho;
+			int itemAleatorio = NumeroAleatorio()%totalItensVizinho;
 			
 			itemAtual = memoria[vizinhoAtual->itemPtr->indice]->listaItens;
 			for(int k = 0; k < itemAleatorio; k++){
